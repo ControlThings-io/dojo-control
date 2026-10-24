@@ -1,0 +1,7 @@
+**
+!Containerfile
+!container/
+!container/**
+!web/
+!web/**
+!LICENSE

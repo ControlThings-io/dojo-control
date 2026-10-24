@@ -1,6 +1,6 @@
 <?php
 
-  $uploaddir = '/var/www/html/dojo-basic/images/';
+  $uploaddir = '/var/www/html/images/';
   $uploadfile = $uploaddir . basename (@$_FILES['userfile']['name']);
   $tmpfile = @$_FILES['userfile']['tmp_name'];
   $filename = @$_FILES['userfile']['name'];

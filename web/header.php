@@ -108,7 +108,6 @@ if ($dosomething  == "logout") {
 		<a href="?page=enter-shift-log.php">Enter Shift Log</a><br>
 		<a href="?page=view-shift-logs.php">View Shift Logs</a><br>
 		<a href="?page=text-file-viewer.php">Reading Room</a><br>
-		<a href="snake/">Play Snake</a><br>
 <?php } ?>
 <?php if (!@@$_COOKIE["sessionid"]) { ?>		
 		<a href="?page=register.php">Register</a><br>

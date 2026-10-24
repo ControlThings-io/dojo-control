@@ -58,7 +58,7 @@ $query ="INSERT INTO `blogs_table` (`cid`, `blogger_name`, `comment`, `date`) VA
 	(1, 'adrian', 'Well, been working on this for a bit. Welcome to my crappy Shift Logger software. :)', '2018-01-01 22:26:12'),
 	(2, 'adrian', 'Looks like I got a lot more work to do. Fun, Fun, Fun!!!', '2018-01-01 22:26:54'),
 	(3, 'anonymous', 'An anonymous shift entry? Huh?', '2018-01-01 22:27:11'),
-	(4, 'ed', 'I'm out of here.  Off shift.  Nothing to report.', '2018-01-01 22:27:48'),
+	(4, 'ed', 'I''m out of here.  Off shift.  Nothing to report.', '2018-01-01 22:27:48'),
 	(5, 'john', 'Why did the IT guys take down our torrent server!', '2018-01-01 22:29:04'),
 	(6, 'john', 'Why give users the ability to get to the unfiltered Internet? It is just asking for trouble in a control network. ', '2018-01-01 22:29:49'),
 	(7, 'john', 'Nextflix is GOOD!!!', '2018-01-01 22:30:06'),
@@ -67,7 +67,6 @@ $query ="INSERT INTO `blogs_table` (`cid`, `blogger_name`, `comment`, `date`) VA
 $result = $mysqli->query($query);
 //echo $mysqli->error($conn );
 
-exec("cp snake/highscores.txt.bak snake/highscores.txt");
 echo "<p>If you see no errors above, it should be done. <a href=\"index.php\">Continue back to the frontpage.</a>";
 ?>
 </body>
