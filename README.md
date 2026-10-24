@@ -4,9 +4,13 @@ An intentionally vulnerable PHP website for local security training. The disposa
 image contains Apache, PHP 5.6.40, and MariaDB 10.11. It targets Linux AMD64 and
 rootless Podman on ControlThings Platform (based on Fedora Aurora).
 
+See the [security policy](SECURITY.md) for intentional vulnerabilities and how to
+report security or abuse concerns.
+
 ## Run the classroom image
 
-The image must be published before these commands will work. From a checkout:
+The first publication must succeed and the package must be public before these
+commands will work. From a checkout:
 
 ```sh
 ./run.sh
@@ -40,6 +44,28 @@ Leave ZAP's proxy on `localhost:8080` and use `http://127.0.0.1:8081` as the tar
 Use a browser launched from ZAP, or configure your browser to proxy loopback
 traffic (many browsers bypass localhost by default). Confirm the target requests
 appear in ZAP's History. See [ZAP's localhost guidance](https://www.zaproxy.org/faq/how-do-you-configure-zap-to-test-an-application-on-localhost/).
+
+## Automatic publication
+
+Pushing commits to `master` runs [Publish lab image](.github/workflows/publish.yml).
+It builds the AMD64 image, checks website startup, seed counts, PHP version, and
+ping, then publishes these tags to `ghcr.io/controlthings-io/dojo-control`:
+
+- `stable`: the latest successfully published build, used by `run.sh`.
+- `sha-<full commit SHA>`: identifies the source commit for a build.
+
+Local commits alone do not trigger publication. Other branches and pull requests
+do not publish. You can also run the workflow manually from the Actions tab on
+`master`. The workflow uses GitHub's automatic `GITHUB_TOKEN`; no personal access
+token or additional secret is needed. GitHub Actions and organization package
+creation must be allowed. After the first successful publication, set the GHCR
+package visibility to **public** so students can pull without signing in. If an
+existing package rejects publication, grant this repository Actions access in
+that package's settings. See [release steps](RELEASE_CHECKLIST.md).
+
+Commit tags identify source; rerunning a workflow can rebuild the same commit
+with updated Debian packages. Use an image digest to pin an exact classroom image.
+Automated startup checks do not replace browser/ZAP exercise validation.
 
 ## Build locally
 

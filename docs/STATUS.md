@@ -1,6 +1,31 @@
 # Current status
 
-## Completed (2026-10-23)
+## Current work: automatic GHCR publication (2026-10-23)
+
+- Added `.github/workflows/publish.yml`: pushes to `master` or manual dispatch on
+  that branch build and test Linux AMD64, then publish `stable` and a full commit
+  SHA tag. Publication is limited to the original repository and uses the automatic
+  GITHUB_TOKEN with contents-read/packages-write permissions.
+- The workflow checks startup, four accounts/eight logs, PHP 5.6.40, and ping before
+  publishing. It copies `.containerignore` to Docker's `.dockerignore`, pins the
+  checkout action to a verified upstream v6 commit, and cancels superseded builds.
+- Updated README, release procedure, and decisions to replace manual-only
+  publication. The existing container implementation is committed as `3031822`;
+  these workflow/documentation changes remain uncommitted.
+- Added a root `SECURITY.md` and README link describing intentional vulnerabilities,
+  local lab use, and repository issues as the contact for security and abuse
+  concerns. Content, relative links, and whitespace were checked; no runtime
+  changes or additional runtime tests were needed.
+
+Validation: actionlint 1.7.12 passed; all three embedded shell steps passed Bash
+syntax checks. The workflow's startup/seed/version/ping shell block passed locally
+against the existing image using Podman in place of Docker and a temporary local
+tag. No image rebuild was needed because runtime sources are unchanged. Local
+Markdown links and whitespace were reviewed. Hosted Docker execution, package
+permissions, and GHCR publication remain unverified until the workflow is pushed
+and runs on GitHub. No commit, push, or publication was performed in this session.
+
+## Container implementation (committed as 3031822)
 
 - Moved the legacy website into `web/`; removed Snake and SOAP, including the
   game navigation and high-score reset command. RSnake research references remain.
@@ -17,7 +42,7 @@
 
 ## Validation evidence
 
-Checked the uncommitted implementation based on `875bdb3` with rootless Podman
+Local validation performed before commit `3031822`, based on `875bdb3`, used rootless Podman
 5.8.9 on Linux AMD64, with host SELinux **Enforcing** and no labeling override.
 The resulting local image is `localhost/dojo-control:dev`, image ID
 `b27c9dcff045529c44d7ed982dcfb3e24601dc80861fb3d4c3edec08da56aa72`.
@@ -44,19 +69,18 @@ Passed:
   A simulated failed pull exited before any replacement attempt.
 
 Validation scripts/payloads were temporary files outside the repository; no
-exercise files were added. Temporary validation containers were removed. A fresh review container named
-`dojo-control` is running from the local image at <http://127.0.0.1:8081>.
+exercise files were added. Temporary validation containers were removed. See the README for local launch
+instructions.
 
 ## Remaining validation and release work
 
 - Review through ZAP and a real browser on the student ControlThings Platform,
   including any course-specific payloads and browser-dependent XSS/CSRF behavior.
-- Publish numbered and stable tags only after explicit authorization. Verify
-  public package visibility, anonymous pulls, and the unmodified launcher against
-  GHCR. This image has not been published yet; use the README's local build/run
-  instructions until publication.
+- Commit and push the workflow to `master` when ready to enable automatic
+  publication. Verify the first hosted run, set the GHCR package to public, and
+  check an anonymous pull and the unmodified launcher on a student system.
+  No remote publication has been verified in this session.
 - Debian package revisions are resolved at build time. Record the final published
   image digest and versions for each classroom release.
 
-Nothing is committed, pushed, or published. See the [release checklist](../RELEASE_CHECKLIST.md)
-and [decisions](DECISIONS.md).
+See the [release checklist](../RELEASE_CHECKLIST.md) and [decisions](DECISIONS.md).

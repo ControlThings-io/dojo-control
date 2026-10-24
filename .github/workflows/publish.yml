@@ -1,0 +1,75 @@
+name: Publish lab image
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+# A newer master push supersedes an older build of the classroom image.
+concurrency:
+  group: publish-ghcr
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    if: github.repository == 'ControlThings-io/dojo-control' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      IMAGE: ghcr.io/controlthings-io/dojo-control
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Build AMD64 image
+        run: |
+          # Docker uses .dockerignore; Podman uses our tracked .containerignore.
+          cp .containerignore .dockerignore
+          docker build --platform linux/amd64 --file Containerfile \
+            --label "org.opencontainers.image.revision=$GITHUB_SHA" \
+            --tag "$IMAGE:sha-$GITHUB_SHA" .
+
+      - name: Check startup and seed data
+        shell: bash
+        run: |
+          cleanup() {
+            result=$?
+            if [ "$result" -ne 0 ]; then docker logs dojo-ci || true; fi
+            docker rm --force dojo-ci >/dev/null || true
+            exit "$result"
+          }
+          trap cleanup EXIT
+          docker run --detach --name dojo-ci --cap-add NET_RAW "$IMAGE:sha-$GITHUB_SHA"
+          ready=false
+          for attempt in {1..60}; do
+            if docker exec dojo-ci curl --fail --silent --max-time 2 \
+                http://127.0.0.1/index.php | grep -q 'Shift Logger'; then
+              ready=true
+              break
+            fi
+            if [ "$(docker inspect --format '{{.State.Running}}' dojo-ci)" != true ]; then break; fi
+            sleep 1
+          done
+          [ "$ready" = true ]
+          counts=$(docker exec dojo-ci mariadb -Nse \
+            'SELECT (SELECT COUNT(*) FROM dojo_control.accounts), (SELECT COUNT(*) FROM dojo_control.blogs_table)')
+          [ "$counts" = $'4\t8' ]
+          docker exec dojo-ci php -r 'exit(PHP_VERSION === "5.6.40" ? 0 : 1);'
+          docker exec --user www-data dojo-ci ping -c 1 127.0.0.1
+
+      - name: Publish commit and stable tags
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          trap 'docker logout ghcr.io >/dev/null' EXIT
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io \
+            --username "$GITHUB_ACTOR" --password-stdin
+          docker push "$IMAGE:sha-$GITHUB_SHA"
+          docker tag "$IMAGE:sha-$GITHUB_SHA" "$IMAGE:stable"
+          docker push "$IMAGE:stable"
